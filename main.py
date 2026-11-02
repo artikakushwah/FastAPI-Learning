@@ -1,3 +1,4 @@
+from http.client import HTTPException, Path
 import json
 
 from fastapi import FastAPI
@@ -13,12 +14,20 @@ def greet():
 def hello():
     return{"This is a Hello endpoint!"}
 
-
-def get_data():
+#Helper funtion 
+def load_data():
     with open("students.json", "r") as file:
         return json.load(file)
 
 
 @app.get("/students") # Get endpoint for the /students URL
 def students():
-    return get_data()
+    return load_data()
+
+#students_id is a path parameter that will be passed in the URL
+@app.get("/students/{students_id}") # Get endpoint for the /students/{student_id} URL
+def get_id(students_id: str=Path(..., description="The ID of the student to retrieve")):
+    data = load_data()
+    if students_id not in data:
+            raise HTTPException(status_code=404, detail="Student not found")
+    return data[students_id]
